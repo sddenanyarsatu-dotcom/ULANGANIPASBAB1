@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIAP UJI - Sistem Gerak Kelas VI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#eef5ff;color:#20334d}
+header{background:linear-gradient(120deg,#12345a,#287bc1);color:white;text-align:center;padding:25px 15px}
+header h1{margin:10px 0}
+main{max-width:950px;margin:22px auto;padding:0 14px}
+.card{background:white;border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #173b6815}
+h2{color:#174779}
+label{display:block;margin:10px 0;font-weight:normal}
+input[type=text],input[type=password],textarea,select{width:100%;padding:12px;border:1px solid #bdcfe2;border-radius:9px;font-size:15px}
+button{padding:12px 17px;border:0;border-radius:9px;background:#1769aa;color:white;font-weight:bold;cursor:pointer;margin:5px 3px}
+button:hover{opacity:.9}
+.option{display:flex;gap:10px;padding:9px;background:#f1f6fc;border-radius:8px}
+.option input{margin-top:4px}
+.question{padding:16px;margin:14px 0;border:1px solid #d9e5f1;border-radius:12px}
+.question h3{font-size:16px;line-height:1.5}
+.small{font-size:13px;color:#60738a;line-height:1.6}
+.notice{background:#fff6d9;border-left:4px solid #edb32d;padding:12px;line-height:1.6}
+.stats{background:#e7f2ff;padding:12px;border-radius:9px;margin:12px 0}
+.hidden{display:none}
+.progress{height:9px;background:#dbe7f4;border-radius:10px;overflow:hidden}
+#bar{height:100%;width:0;background:#28a36a}
+.score{font-size:42px;font-weight:bold;color:#198754}
+footer{text-align:center;padding:20px;color:#64748b;font-size:12px}
+@media(max-width:600px){.card{padding:15px}button{max-width:100%}}
+</style>
+</head>
+<body>
+
+<header>
+<div>🎓 GAME EDUKATIF • KELAS VI</div>
+<h1>🦴 SIAP UJI</h1>
+<h3>Misi Sistem Gerak Manusia</h3>
+<p>SD Negeri Denanyar 1</p>
+<p>IPAS Kelas VI • Bab 1: Bagaimana Tubuh Kita Bergerak?</p>
+</header>
+
+<main>
+<section id="login" class="card">
+<h2>🚀 Login Peserta Didik</h2>
+<p>Silakan pilih nama dan masukkan NIPD sebagai kata sandi.</p>
+<label>Nama peserta didik
+<select id="nama"><option value="">-- Pilih nama --</option></select>
+</label>
+<label>NIPD / Kata sandi
+<input type="password" id="nipd" placeholder="Masukkan NIPD">
+</label>
+<p id="error" style="color:#c0392b"></p>
+<button onclick="masuk()">Mulai Ujian 🏁</button>
+<div class="notice">
+<b>Petunjuk pengerjaan</b><br>
+• Pilihan ganda: pilih satu jawaban.<br>
+• Pilihan ganda kompleks: pilih semua jawaban yang benar.<br>
+• Menjodohkan: pilih pasangan yang sesuai.<br>
+• Isian dan uraian: tulis jawaban dengan jelas.<br>
+• Periksa kembali jawaban sebelum menyelesaikan ujian.
+</div>
+<p class="small">Demo HTML ini tidak menyimpan jawaban ke server. Email hasil disiapkan melalui aplikasi email perangkat.</p>
+</section>
+
+<section id="ujian" class="card hidden">
+<h2>🎯 Arena Ujian</h2>
+<div id="identitas"></div>
+<div class="stats">Jumlah soal: 40 | Terjawab: <span id="jumlah">0</span>/40</div>
+<div class="progress"><div id="bar"></div></div>
+<div id="daftarSoal"></div>
+<button onclick="selesai()">Selesaikan Ujian 🏆</button>
+</section>
+
+<section id="hasil" class="card hidden">
+<h2>🏆 Hasil Ujian</h2>
+<div id="identitasHasil"></div>
+<div class="score" id="nilai"></div>
+<div id="rincian"></div>
+<div class="notice">
+Nilai otomatis mencakup pilihan ganda, pilihan ganda kompleks, dan menjodohkan. Isian singkat dan uraian perlu diperiksa guru.
+</div>
+<button onclick="kirimEmail()">📧 Kirim Hasil ke Gmail Guru</button>
+<button onclick="lihatRekap()">Lihat Rekap Jawaban</button>
+<div id="status" class="small"></div>
+<div id="rekap" class="hidden"></div>
+</section>
+</main>
+<footer>SIAP UJI • SD Negeri Denanyar 1 • Tahun Pelajaran 2026/2027</footer>
+
+<script>
+// DAFTAR LOGIN PESERTA DIDIK
+const siswa=[
+["ABID ALVARO GAVRIEL","2759"],
+["AFFIN CHARLISA ACHYARNIS","2760"],
+["ALBY FAREL AXEL FAIRUS","2761"],
+["ANGGRAITA DARA KUSUMANINGRUM","2762"],
+["ARGA ADAM ALFATIR","2763"],
+["ARIF AZHARI SETIAWAN","2764"],
+["AZIZ SATRIO PRAMBUDI","2765"],
+["AZKA KHOIRUNNISA","2766"],
+["BILQIS ZAHIRA ALYA AZIZA","2820"],
+["DANIEL IRKHAM YUNIANTO","2767"],
+["DELTA DANIES WICAKSONO","2768"],
+["ELVINA NOVITA SARI","2769"],
+["FATIN DESTIANA SHIDQIA","2770"],
+["IAN THU ALFIAN","2771"],
+["KHALISA ZAHRA RAMADHANI","2772"],
+["LABIBAH ANINDYA JIHAN TALITA ULFA","2774"],
+["MAYDA NURUL AZKIA","2775"],
+["MUHAMMAD AMIRRUDIN","2776"],
+["MUHAMMAD EZA HAFIZ ADITIYA","2777"],
+["MUHAMMAD RIFKY CAHYO SAPUTRO","2778"],
+["NURIYA JANNATUN NAIM","2779"],
+["PRABU AHMAD AHNAFI","2780"],
+["QEYLA ABSHARI FIRDA RAHMADANI","2848"],
+["RAHMAT MAULANA","2781"],
+["RAVA'EL DWI VANDIMAS","2782"],
+["RAVE'AL DIMAS PRAYOGA","2783"],
+["RISMACERLYN NUR ISKANDAR","2784"],
+["SAMUEL DESWA ANGGARA","2785"],
+["VAHDIL ASKA HARIANSYAH","2824"]
+];
+
+const soal=[];
+function tambah(jenis,tanya,opsi,kunci,pedoman){
+ soal.push({jenis,tanya,opsi,kunci,pedoman});
+}
+
+// 1–15 PILIHAN GANDA
+[
+["Fungsi utama rangka manusia adalah ...",["Mencerna makanan","Menopang tubuh dan melindungi organ","Memompa darah","Menghasilkan suara"],1],
+["Tulang rusuk melindungi organ ...",["Jantung dan paru-paru","Lambung saja","Otot kaki","Kulit kepala"],0],
+["Tempat bertemunya dua tulang disebut ...",["Saraf","Sendi","Kulit","Otot"],1],
+["Otot membantu gerakan dengan cara ...",["Berkontraksi dan mengendur","Berubah menjadi tulang","Mencerna makanan","Menggantikan otak"],0],
+["Sendi pada siku merupakan sendi ...",["Peluru","Engsel","Putar","Geser"],1],
+["Contoh sendi peluru terdapat pada ...",["Bahu","Siku","Tengkorak","Antartulang pergelangan"],0],
+["Gerakan menggelengkan kepala dibantu sendi ...",["Engsel","Putar","Pelana","Mati"],1],
+["Otot bisep dan trisep bekerja secara ...",["Berlawanan","Tidak berkaitan","Selalu berhenti","Memiliki fungsi sama pada saat bersamaan"],0],
+["Pusat pengolahan informasi tubuh adalah ...",["Otak","Kuku","Rambut","Gigi"],0],
+["Menarik tangan dari benda panas merupakan respons yang dibantu oleh ...",["Sistem saraf","Sistem pencernaan","Rambut","Kuku"],0],
+["Fungsi saraf adalah ...",["Mengirim pesan tubuh","Mencerna makanan","Menggantikan tulang","Membentuk gigi"],0],
+["Kebiasaan menjaga kesehatan tulang adalah ...",["Duduk membungkuk terus","Makan bergizi dan aktif bergerak","Tidak pernah berolahraga","Membawa tas berat sebelah"],1],
+["Sebelum olahraga kita sebaiknya ...",["Pemanasan","Langsung berlari sekuat tenaga","Tidak minum seharian","Tidur di lapangan"],0],
+["Vitamin D membantu tubuh menjaga kesehatan ...",["Tulang","Rambut saja","Kuku saja","Kulit saja"],0],
+["Cara aman mengangkat benda dari lantai adalah ...",["Membungkukkan pinggang saja","Menekuk lutut dan menjaga posisi punggung","Memutar badan mendadak","Memaksakan beban berat"],1]
+].forEach(x=>tambah("pg",x[0],x[1],x[2],""));
+
+
+// 16–20 PILIHAN GANDA KOMPLEKS
+[
+["Pilih semua fungsi rangka yang benar.",["Menopang tubuh","Melindungi organ tertentu","Bekerja bersama otot untuk bergerak","Mencerna makanan"],[0,1,2]],
+["Pilih pernyataan tentang sendi yang benar.",["Siku merupakan sendi engsel","Bahu merupakan sendi peluru","Leher membantu gerakan memutar kepala","Tengkorak bergerak bebas seperti sendi peluru"],[0,1,2]],
+["Pilih pernyataan yang benar tentang otot.",["Otot dapat berkontraksi","Otot rangka membantu menggerakkan tulang","Pasangan otot dapat bekerja berlawanan","Otot tidak memerlukan energi"],[0,1,2]],
+["Pilih pernyataan yang benar tentang sistem saraf.",["Menerima informasi","Membantu mengatur respons","Saraf membawa pesan tubuh","Hanya bekerja ketika tidur"],[0,1,2]],
+["Pilih kebiasaan baik untuk sistem gerak.",["Olahraga sesuai kemampuan","Makan bergizi seimbang","Menjaga postur tubuh","Mengabaikan rasa sakit saat beraktivitas"],[0,1,2]]
+].forEach(x=>tambah("pgk",x[0],x[1],x[2],""));
+
+
+// 21–25 MENJODOHKAN
+[
+["Pasangkan bagian tubuh dengan fungsinya.",[
+["Rangka","Menopang dan melindungi tubuh"],
+["Otot","Berkontraksi untuk menghasilkan gerak"],
+["Sendi engsel","Menekuk dan meluruskan"],
+["Otak","Mengolah informasi"],
+["Tendon","Menghubungkan otot dengan tulang"]
+]],
+["Pasangkan jenis sendi dengan contohnya.",[
+["Sendi peluru","Bahu"],
+["Sendi engsel","Siku"],
+["Sendi putar","Leher"],
+["Sendi pelana","Pangkal ibu jari"],
+["Sendi geser","Antartulang pergelangan tangan"]
+]],
+["Pasangkan kebiasaan dengan manfaatnya.",[
+["Pemanasan","Mempersiapkan tubuh sebelum olahraga"],
+["Makanan berkalsium","Mendukung kesehatan tulang"],
+["Postur yang baik","Menjaga posisi tubuh"],
+["Istirahat cukup","Membantu pemulihan tubuh"],
+["Olahraga teratur","Melatih otot dan kebugaran"]
+]],
+["Pasangkan istilah dengan penjelasannya.",[
+["Tulang","Bagian keras penyusun rangka"],
+["Saraf","Mengirim pesan tubuh"],
+["Kontraksi","Otot menegang untuk menghasilkan gaya"],
+["Refleks","Respons cepat terhadap rangsangan"],
+["Sendi","Tempat bertemunya tulang"]
+]],
+["Pasangkan aktivitas dengan bagian yang berperan.",[
+["Menendang bola","Otot kaki, sendi, dan rangka"],
+["Menulis","Otot tangan dan sendi jari"],
+["Menoleh","Sendi putar di leher"],
+["Menarik tangan dari benda panas","Sistem saraf dan refleks"],
+["Berdiri tegak","Rangka dan otot postur"]
+]]
+].forEach(x=>tambah("match",x[0],x[1],"",""));
+
+
+// 26–35 ISIAN SINGKAT
+[
+["Bagian tempat bertemunya dua tulang disebut ...",["sendi"]],
+["Tulang yang melindungi otak disebut tulang ...",["tengkorak"]],
+["Jaringan yang menghubungkan otot dengan tulang disebut ...",["tendon"]],
+["Sendi pada siku termasuk jenis sendi ...",["engsel"]],
+["Pusat pengendali sistem saraf yang berada di kepala adalah ...",["otak"]],
+["Respons cepat dan otomatis terhadap rangsangan disebut gerak ...",["refleks","reflek"]],
+["Mineral penting untuk pembentukan tulang adalah ...",["kalsium"]],
+["Kegiatan sebelum olahraga untuk mempersiapkan tubuh disebut ...",["pemanasan"]],
+["Otot yang membantu menggerakkan tulang disebut otot ...",["rangka"]],
+["Saat membawa tas, beban sebaiknya dibawa secara ...",["seimbang","wajar"]]
+].forEach(x=>tambah("isian",x[0],[],x[1],""));
+
+// 36–40 URAIAN
+[
+["Jelaskan tiga fungsi rangka manusia dan berikan satu contoh setiap fungsi.",
+"Rangka menopang tubuh, melindungi organ, dan membantu gerakan bersama otot."],
+["Jelaskan bagaimana tulang, sendi, dan otot bekerja sama saat menendang bola.",
+"Otot berkontraksi, menarik tulang melalui tendon, lalu tulang bergerak pada sendi."],
+["Jelaskan peran sistem saraf ketika tangan menyentuh benda panas.",
+"Sistem saraf menerima informasi rangsangan dan membantu tubuh memberikan respons cepat untuk menarik tangan."],
+["Sebutkan empat kebiasaan menjaga kesehatan tulang dan otot.",
+"Contoh: makan bergizi, olahraga, pemanasan, menjaga postur, cukup istirahat, dan mencukupi kebutuhan kalsium serta vitamin D."],
+["Pilih satu aktivitas sehari-hari. Sebutkan bagian sistem gerak yang terlibat dan cara melakukannya dengan aman.",
+"Jawaban menyebut aktivitas, bagian tubuh yang berperan, dan cara aman melakukan aktivitas."]
+].forEach(x=>tambah("uraian",x[0],[],[],x[1]));
+
+let peserta=null, sudahSelesai=false, laporan="";
+
+const el=id=>document.getElementById(id);
+siswa.forEach(s=>{
+ let o=document.createElement("option");
+ o.value=s[0];o.textContent=s[0];el("nama").appendChild(o);
+});
+
+function masuk(){
+ let nama=el("nama").value;
+ let nipd=el("nipd").value.trim();
+ peserta=siswa.find(s=>s[0]===nama&&s[1]===nipd);
+ if(!peserta){
+  el("error").textContent="Nama atau NIPD salah. Silakan periksa kembali.";
+  return;
+ }
+ el("login").classList.add("hidden");
+ el("ujian").classList.remove("hidden");
+ el("identitas").textContent="Peserta: "+peserta[0]+" | NIPD: "+peserta[1];
+ tampilkanSoal();
+ window.scrollTo(0,0);
+}
+
+function tampilkanSoal(){
+ const root=el("daftarSoal");
+ root.innerHTML="";
+ const jenisNama={
+  pg:"Pilihan Ganda",
+  pgk:"Pilihan Ganda Kompleks",
+  match:"Menjodohkan",
+  isian:"Isian Singkat",
+  uraian:"Uraian"
+ };
+ soal.forEach((s,i)=>{
+  let d=document.createElement("div");
+  d.className="question";
+  let html=`<div class="small">${jenisNama[s.jenis]} • Soal ${i+1}</div>
+  <h3>${i+1}. ${s.tanya}</h3>`;
+
+  if(s.jenis==="pg"||s.jenis==="pgk"){
+   html+=s.opsi.map((o,j)=>`
+   <label class="option">
+   <input type="${s.jenis==="pg"?"radio":"checkbox"}"
+   name="q${i}" value="${j}">
+   <span>${String.fromCharCode(65+j)}. ${o}</span>
+   </label>`).join("");
+  }
+
+  if(s.jenis==="match"){
+   html+=s.kunci.map((p,j)=>`
+   <label>${p[0]}
+   <select name="q${i}_${j}">
+   <option value="">-- Pilih pasangan --</option>
+   ${s.kunci.map((v,k)=>`<option value="${k}">${v[1]}</option>`).join("")}
+   </select></label>`).join("");
+  }
+
+  if(s.jenis==="isian"){
+   html+=`<input type="text" name="q${i}" placeholder="Tuliskan jawaban...">`;
+  }
+
+  if(s.jenis==="uraian"){
+   html+=`<textarea name="q${i}" rows="4" placeholder="Tuliskan jawabanmu..."></textarea>`;
+  }
+
+  d.innerHTML=html;
+  root.appendChild(d);
+ });
+ root.addEventListener("change",progres);
+ root.addEventListener("input",progres);
+}
+
+function jawaban(i){
+ let s=soal[i];
+ if(s.jenis==="pg"){
+  let x=document.querySelector(`input[name="q${i}"]:checked`);
+  return x?Number(x.value):null;
+ }
+ if(s.jenis==="pgk"){
+  return [...document.querySelectorAll(`input[name="q${i}"]:checked`)]
+   .map(x=>Number(x.value)).sort((a,b)=>a-b);
+ }
+ if(s.jenis==="match"){
+  return s.kunci.map((_,j)=>{
+   let x=document.querySelector(`[name="q${i}_${j}"]`);
+   return x&&x.value!==""?Number(x.value):null;
+  });
+ }
+ let x=document.querySelector(`[name="q${i}"]`);
+ return x?x.value.trim():"";
+}
+
+function progres(){
+ let terjawab=soal.filter((s,i)=>{
+  let a=jawaban(i);
+  if(s.jenis==="pg")return a!==null;
+  if(s.jenis==="pgk"||s.jenis==="match")return a.some(x=>x!==null);
+  return a.length>0;
+ }).length;
+ el("jumlah").textContent=terjawab;
+ el("bar").style.width=terjawab/40*100+"%";
+}
+
+function sama(a,b){
+ return JSON.stringify(a)===JSON.stringify(b);
+}
+
+function selesai(){
+ if(sudahSelesai)return;
+ if(!confirm("Apakah Anda yakin menyelesaikan ujian?"))return;
+ sudahSelesai=true;
+ let benar=0,pg=0,pgk=0,match=0;
+ soal.forEach((s,i)=>{
+  let a=jawaban(i);
+  if(s.jenis==="pg"&&a===s.kunci){benar++;pg++}
+  if(s.jenis==="pgk"&&sama(a,s.kunci.slice().sort((x,y)=>x-y))){benar++;pgk++}
+  if(s.jenis==="match"&&sama(a,s.kunci.map((_,k)=>k))){/* tidak digunakan */}
+ });
+
+ // Kunci pasangan adalah urutan indeks pilihan yang benar.
+ // Karena urutan pasangan pada soal dibuat sesuai urutan opsi,
+ // jawaban cocok jika setiap baris memilih indeks yang tepat.
+ match=0;
+ soal.forEach((s,i)=>{
+  if(s.jenis==="match"){
+   const a=jawaban(i);
+   const k=s.kunci.map((_,j)=>j);
+   if(sama(a,k)){benar++;match++}
+  }
+ });
+
+ let persen=Math.round(benar/25*100);
+ let detail=[];
+ detail.push("Pilihan ganda: "+pg+"/15");
+ detail.push("Pilihan ganda kompleks: "+pgk+"/5");
+ detail.push("Menjodohkan: "+match+"/5");
+ detail.push("Skor objektif: "+benar+"/25");
+ detail.push("Isian singkat: perlu diperiksa guru (10 soal)");
+ detail.push("Uraian: perlu diperiksa guru (5 soal)");
+
+ laporan="HASIL SIAP UJI - SISTEM GERAK\n"+
+ "SD Negeri Denanyar 1\n"+
+ "Nama: "+peserta[0]+"\nNIPD: "+peserta[1]+"\n"+
+ "Tanggal: "+new Date().toLocaleString("id-ID")+"\n"+
+ "Nilai objektif: "+persen+"%\n"+detail.join("\n")+
+ "\n\nREKAP JAWABAN:\n";
+
+ soal.forEach((s,i)=>{
+  let a=jawaban(i),teks="";
+  if(s.jenis==="pg")teks=a===null?"Belum dijawab":s.opsi[a];
+  else if(s.jenis==="pgk")teks=a.map(x=>s.opsi[x]).join(", ")||"Belum dijawab";
+  else if(s.jenis==="match")teks=s.kunci.map((p,j)=>p[0]+" → "+(a[j]===null?"Belum dijawab":s.kunci[a[j]][1])).join("; ");
+  else teks=a||"Belum dijawab";
+  laporan+=`\n${i+1}. ${s.tanya}\nJawaban: ${teks}\n`;
+  if(s.jenis==="uraian")laporan+="Pedoman: "+s.pedoman+"\n";
+  if(s.jenis==="isian")laporan+="Kunci: "+s.kunci.join(" / ")+"\n";
+ });
+
+ el("ujian").classList.add("hidden");
+ el("hasil").classList.remove("hidden");
+ el("identitasHasil").textContent=peserta[0]+" • NIPD "+peserta[1];
+ el("nilai").textContent=persen+"%";
+ el("rincian").innerHTML=detail.map(x=>"<p>"+x+"</p>").join("");
+ window.scrollTo(0,0);
+}
+
+function kirimEmail(){
+ if(!laporan)return;
+ const subject=encodeURIComponent("Hasil SIAP UJI Sistem Gerak - "+peserta[0]);
+ const body=encodeURIComponent(laporan);
+ el("status").textContent=
+ "Aplikasi email akan dibuka. Periksa rekap lalu tekan KIRIM. Email belum terkirim sebelum Anda menekan tombol kirim di aplikasi email.";
+ window.location.href="mailto:danysetyanto.ds@gmail.com?subject="+subject+"&body="+body;
+}
+
+function lihatRekap(){
+ const r=el("rekap");
+ r.classList.toggle("hidden");
+ if(r.classList.contains("hidden"))return;
+ r.innerHTML="<h3>Rekap Jawaban</h3>";
+ soal.forEach((s,i)=>{
+  let a=jawaban(i),teks="";
+  if(s.jenis==="pg")teks=a===null?"Belum dijawab":s.opsi[a];
+  else if(s.jenis==="pgk")teks=a.map(x=>s.opsi[x]).join(", ")||"Belum dijawab";
+  else if(s.jenis==="match")teks=s.kunci.map((p,j)=>p[0]+" → "+(a[j]===null?"Kosong":s.kunci[a[j]][1])).join("; ");
+  else teks=a||"Belum dijawab";
+  r.innerHTML+=`<div class="question"><b>${i+1}. ${s.tanya}</b><p>Jawaban: ${aman(teks)}</p>${s.pedoman?`<p class="small">Pedoman: ${aman(s.pedoman)}</p>`:""}</div>`;
+ });
+}
+
+function aman(x){
+ return String(x).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+</script>
+</body>
+</html>
